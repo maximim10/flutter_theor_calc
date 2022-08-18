@@ -168,11 +168,17 @@ def theor_calc(v=150*1000, flutter_speed=0, file="result for 300_1 iter.tra"):
                     w_j = w_k
         w_j_prev = w_j
         k_j = sp.I*w_j*b/2/v
+##        k = sp.I*w*b/2/v
         Mach = v/Sound_speed
-        L_h = k_j**2+2*k_j*C_theod(v,w_j,b)+Mach**2*math.log(Mach)*(k_j**4/2+2*k_j**3*C_theod(v,w_j,b)+2*k_j**2*C_theod(v,w_j,b)**2)
-        L_a = k_j-A*k_j**2+C_theod(v,w_j,b)*(2+(1-2*A)*k_j)+Mach**2*math.log(Mach)*(k_j**3/2-k_j**4/2*A+C_theod(v,w_j,b)*(2*k_j**2+(1/2-2*A)*k_j**3)+C_theod(v,w_j,b)**2*(2*k_j+(1-2*A)*k_j**2))
-        M_h = A*k_j**2+(1+2*A)*k_j*C_theod(v,w_j,b)+Mach**2*math.log(Mach)*((1+2*A)*k_j**2*C_theod(v,w_j,b)**2+(1/2+2*A)*k_j**3*C_theod(v,w_j,b)+k_j**4/2*A)
-        M_a = (A-1/2)*k_j-(1/8+A**2)*k_j**2+C_theod(v,w_j,b)*(1+2*A+(1/2-2*A**2)*k_j)+Mach**2*math.log(Mach)*(A/2*k_j**3-A**2/2*k_j**4+C_theod(v,w_j,b)**2*((1+2*A)*k_j+(1/2-2*A**2)*k_j**2)+C_theod(v,w_j,b)*((1/2+2*A)*k_j**2-2*A**2*k_j**3))
+        Mach = 0.00000000001
+##        L_h = k_j**2+2*k_j*C_theod(v,w_j,b)+Mach**2*math.log(Mach)*(k_j**4/2+2*k_j**3*C_theod(v,w_j,b)+2*k_j**2*C_theod(v,w_j,b)**2)
+##        L_a = k_j-A*k_j**2+C_theod(v,w_j,b)*(2+(1-2*A)*k_j)+Mach**2*math.log(Mach)*(k_j**3/2-k_j**4/2*A+C_theod(v,w_j,b)*(2*k_j**2+(1/2-2*A)*k_j**3)+C_theod(v,w_j,b)**2*(2*k_j+(1-2*A)*k_j**2))
+##        M_h = A*k_j**2+(1+2*A)*k_j*C_theod(v,w_j,b)+Mach**2*math.log(Mach)*((1+2*A)*k_j**2*C_theod(v,w_j,b)**2+(1/2+2*A)*k_j**3*C_theod(v,w_j,b)+k_j**4/2*A)
+##        M_a = (A-1/2)*k_j-(1/8+A**2)*k_j**2+C_theod(v,w_j,b)*(1+2*A+(1/2-2*A**2)*k_j)+Mach**2*math.log(Mach)*(A/2*k_j**3-A**2/2*k_j**4+C_theod(v,w_j,b)**2*((1+2*A)*k_j+(1/2-2*A**2)*k_j**2)+C_theod(v,w_j,b)*((1/2+2*A)*k_j**2-2*A**2*k_j**3))
+        L_h = (sp.I*w_j*b/2/v)**2+2*(sp.I*w*b/2/v)*C_theod(v,w_j,b)+Mach**2*math.log(Mach)*(k_j**4/2+2*k_j**3*C_theod(v,w_j,b)+2*(sp.I*w_j*b/2/v)**2*C_theod(v,w_j,b)**2)
+        L_a = (sp.I*w*b/2/v)-A*(sp.I*w_j*b/2/v)**2+C_theod(v,w_j,b)*(2+(1-2*A)*(sp.I*w*b/2/v))+Mach**2*math.log(Mach)*(k_j**3/2-k_j**4/2*A+C_theod(v,w_j,b)*(2*(sp.I*w_j*b/2/v)**2+(1/2-2*A)*k_j**3)+C_theod(v,w_j,b)**2*(2*(sp.I*w*b/2/v)+(1-2*A)*(sp.I*w_j*b/2/v)**2))
+        M_h = A*(sp.I*w_j*b/2/v)**2+(1+2*A)*(sp.I*w*b/2/v)*C_theod(v,w_j,b)+Mach**2*math.log(Mach)*((1+2*A)*(sp.I*w_j*b/2/v)**2*C_theod(v,w_j,b)**2+(1/2+2*A)*k_j**3*C_theod(v,w_j,b)+k_j**4/2*A)
+        M_a = (A-1/2)*(sp.I*w*b/2/v)-(1/8+A**2)*(sp.I*w_j*b/2/v)**2+C_theod(v,w_j,b)*(1+2*A+(1/2-2*A**2)*(sp.I*w*b/2/v))+Mach**2*math.log(Mach)*(A/2*k_j**3-A**2/2*k_j**4+C_theod(v,w_j,b)**2*((1+2*A)*(sp.I*w*b/2/v)+(1/2-2*A**2)*(sp.I*w_j*b/2/v)**2)+C_theod(v,w_j,b)*((1/2+2*A)*(sp.I*w_j*b/2/v)**2-2*A**2*k_j**3))
         f11 = sp.expand(math.pi*ro*v**2*L_h)
         f12 = sp.expand(math.pi*ro*v**2*(b/2)*L_a)
         f21 = sp.expand(math.pi*ro*v**2*(b/2)*M_h)
@@ -192,7 +198,7 @@ def theor_calc(v=150*1000, flutter_speed=0, file="result for 300_1 iter.tra"):
     return flutter_speed
 if __name__ == "__main__":
     flutter_speed = ['>1000', '>1000', '>1000', '>1000']
-    for i in range(10, 210, 10):
+    for i in range(50, 51, 40):
 ##        file_res_300_iter = open("result for 300_1 iter.tra",'a+')
 ####        file_res_300_iter.write(str(i))
 ##        file_res_300_iter.close()
