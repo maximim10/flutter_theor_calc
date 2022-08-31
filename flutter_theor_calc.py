@@ -22,7 +22,7 @@ def C_theod(v,w_j,b):
 def theor_calc(v=150*1000, flutter_speed=0, file="result for 300_1 iter.tra"):
     v = v/3.6*1000
     Sound_speed = 340.294*1000
-    c1=0.09; k2=30; m=2*(10**-8); h=10; b=100; o=-20; dcy=6.283; ro=1.225e-12; l=4000; #a=(50-100*0.228);
+    c1=1.5; k2=30; m=2*(10**-8); h=10; b=100; o=-20; dcy=6.283; ro=1.225e-12; l=4000; #a=(50-100*0.228);
     file_res_300_iter = open(file,'a+')
     a = 25
     A = 2*o/b
@@ -92,94 +92,319 @@ def theor_calc(v=150*1000, flutter_speed=0, file="result for 300_1 iter.tra"):
     matrix_eq = -w**2*eye(2)+sp.I*w*D_matrix+Kk_matrix+Ka_matrix
     eq_det = sp.Eq(matrix_eq.det(),0)
     res = sp.solve(eq_det, w)
-    print(f"\n{res=}")
+##    print(f"\n{res=}")
     if flutter_speed[1] == '>1000' and (im(res[0])<0 or im(res[1])<0 or im(res[2])<0 or im(res[3])<0):
         flutter_speed[1] = v*3.6/1000
    
 
 ##########      Theodorsen     #################
-
-
-    res_det = res
-    stop_flag = 1
-    ind = 0
-    while stop_flag:
-        w_j = res_det[1]
-        if ind == 0:
-            ind+= 1
-        else:
-            dist = abs(w_j_prev-w_j)
-            for w_k in res_det:
-                if abs(w_j_prev-w_k)<dist:
-                    dist = abs(w_j_prev-w_k)
-                    w_j = w_k
-##                print(f"Dist from {w_j_prev} to {w_k}  is  {abs(w_j_prev-w_k)}")
-        w_j_prev = w_j
-        res_det_prev = res_det
-##        w_j = 0.000000000001
-        print(f"{w_j=}")
-        k_j = w_j*b/2/v
-        k = w*b/2/v
-##        L_z = 2*math.pi*(-k**2/2-im(C_theod(v,w_j,b))*k)
-##        L_z_d = 2*math.pi*sp.re(C_theod(v,w_j,b))
-##        L_t = 2*math.pi*(k**2*(2*o/b)/2+re(C_theod(v,w_j,b))-im(C_theod(v,w_j,b))*k*(1/2-2*o/b))
-##        L_t_d = 2*math.pi*(1/2+re(C_theod(v,w_j,b))*(1/2-2*o/b)+im(C_theod(v,w_j,b))/k_j)
-##        M_z = 2*math.pi*(-k**2*(2*o/b)/2-im(C_theod(v,w_j,b))*k*(1/2+2*o/b))
-##        M_z_d = 2*math.pi*(1/2+2*o/b)*re(C_theod(v,w_j,b))
-##        M_t = 2*math.pi*(k**2/2*(1/8+(2*o/b)**2)+re(C_theod(v,w_j,b))*(1/2+2*o/b)-im(C_theod(v,w_j,b))*k*(1/2+2*o/b)*(1/2-2*o/b))
-##        M_t_d = 2*math.pi*(-1/2*(1/2-2*o/b)+re(C_theod(v,w_j,b))*(1/2+2*o/b)*(1/2-2*o/b)+im(C_theod(v,w_j,b))/k_j*(1/2+2*o/b))
-        
-        L_z = 2*math.pi*(-k**2/2-im(C_theod(v,w_j,b))*k_j)
-        L_z_d = 2*math.pi*sp.re(C_theod(v,w_j,b))
-        L_t = 2*math.pi*(k_j**2*(2*o/b)/2+re(C_theod(v,w_j,b))-im(C_theod(v,w_j,b))*k*(1/2-2*o/b))
-        L_t_d = 2*math.pi*(1/2+re(C_theod(v,w_j,b))*(1/2-2*o/b)+im(C_theod(v,w_j,b))/k_j)
-        M_z = 2*math.pi*(-k**2*(2*o/b)/2-im(C_theod(v,w_j,b))*k*(1/2+2*o/b))
-        M_z_d = 2*math.pi*(1/2+2*o/b)*re(C_theod(v,w_j,b))
-        M_t = 2*math.pi*(k_j**2/2*(1/8+(2*o/b)**2)+re(C_theod(v,w_j,b))*(1/2+2*o/b)-im(C_theod(v,w_j,b))*k_j*(1/2+2*o/b)*(1/2-2*o/b))
-        M_t_d = 2*math.pi*(-1/2*(1/2-2*o/b)+re(C_theod(v,w_j,b))*(1/2+2*o/b)*(1/2-2*o/b)+im(C_theod(v,w_j,b))/k_j*(1/2+2*o/b))
-        m11 = m*b*l
-        m12 = m*b*l*o
-        m21 = m*b*l*o
-        m22 = m*b*l*o**2+Iz
-        M_matrix = Matrix([[m11,m12],[m21,m22]])
-        kk11 = c1*l
-        kk22 = k2*l
-        Kk_matrix = Matrix([[kk11,0],[0,kk22]])
-##          Сейчас везде стоит w_j
-##          Как превратить в квазистационарный: В строках f12 и f22 w заменить на w_j; вернуть строку w_j = 0.000000000001
-        f11 = sp.expand(ro*v**2*(b/2)*(L_z+sp.I*k*L_z_d)/(b/2))
-        f12 = sp.expand(ro*v**2*(b/2)*(L_t+sp.I*k*L_t_d))
-        f21 = sp.expand(ro*v**2*(b/2)**2*(M_z+sp.I*k*M_z_d)/(b/2))
-        f22 = sp.expand(ro*v**2*(b/2)**2*(M_t+sp.I*k*M_t_d))
-        f11*= -l
-        f12*= l
-        f21*= -l
-        f22*= l
-##        print(f"{L_z = }; {L_z_d = }; {L_t = }; {L_t_d = }; {M_z = }; {M_z_d = }; {M_t = }; {M_t_d = }; ")
-        Force_matrix = Matrix([[f11,f12],[f21,f22]])
-##        print(f"{Force_matrix=}")
-        Final_matrix = -w**2*M_matrix+Kk_matrix-Force_matrix
-        eq_det = sp.Eq(Final_matrix.det(),0)
-        res_det = sp.solve(eq_det, w)
-##        print(f"\n{eq_det=}")
-##        print(f"\n{res_det=}\n\n")
-        
-        for elem in res_det:
-            close_flag = 0
-            for elem_prev in res_det_prev:
-                if abs(elem-elem_prev) <= 0.0001:
-                    close_flag = 1
-            if close_flag == 0:
+def get_Theodorsen(v, c1, k2, m, h, b, o, dcy, ro, l, a, Sound_speed=340.294*1000):
+    v = v/3.6*1000
+    k2 = b**2/4*c1-c1*o**2
+    Iz = m*b*l*(h**2+b**2)/12
+    M = m*b*l
+    A = 2*o/b
+    a11 = c1*l
+    a12 = -o*c1*l
+    a21 = -o*c1*l
+    a22 = o**2*c1*l+k2*l
+    ka12 = -dcy*ro*v**2/2*b*l/M
+    ka22 = -a*dcy*ro*v**2/2*b*l/Iz
+    a13 = dcy*ro*v/2*b*l
+    a23 = dcy*ro*v/2*b*l*a
+    a14 = -dcy*ro*v/2*b*l*o
+    a24 = -dcy*ro*v/2*b*l*o*a
+    a11/= M
+    a12/= M
+    a13/= M
+    a14/= M
+    a21/= Iz
+    a22/= Iz
+    a23/= Iz
+    a24/= Iz
+    Kk_matrix = Matrix([[a11,a12],[a21,a22]])
+    Ka_matrix = Matrix([[0,ka12],[0,ka22]])
+    D_matrix = Matrix([[a13,0],[a23,0]])
+    w = sp.Symbol("w")
+    matrix_eq = -w**2*eye(2)+sp.I*w*D_matrix+Kk_matrix+Ka_matrix
+    eq_det = sp.Eq(matrix_eq.det(),0)
+    res = sp.solve(eq_det, w)
+    
+    flutter_flag = 0
+    res_det = res    
+    w_j = res_det[0]
+##    print(f"{w_j=}")
+    k_j = w_j*b/2/v
+    k = w*b/2/v   
+    L_z = 2*math.pi*(-k**2/2-im(C_theod(v,w_j,b))*k)
+    L_z_d = 2*math.pi*sp.re(C_theod(v,w_j,b))
+    L_t = 2*math.pi*(k**2*(2*o/b)/2+re(C_theod(v,w_j,b))-im(C_theod(v,w_j,b))*k*(1/2-2*o/b))
+    L_t_d = 2*math.pi*(1/2+re(C_theod(v,w_j,b))*(1/2-2*o/b)+im(C_theod(v,w_j,b))/k)
+    M_z = 2*math.pi*(-k**2*(2*o/b)/2-im(C_theod(v,w_j,b))*k*(1/2+2*o/b))
+    M_z_d = 2*math.pi*(1/2+2*o/b)*re(C_theod(v,w_j,b))
+    M_t = 2*math.pi*(k**2/2*(1/8+(2*o/b)**2)+re(C_theod(v,w_j,b))*(1/2+2*o/b)-im(C_theod(v,w_j,b))*k*(1/2+2*o/b)*(1/2-2*o/b))
+    M_t_d = 2*math.pi*(-1/2*(1/2-2*o/b)+re(C_theod(v,w_j,b))*(1/2+2*o/b)*(1/2-2*o/b)+im(C_theod(v,w_j,b))/k*(1/2+2*o/b))
+    m11 = m*b*l
+    m12 = m*b*l*o
+    m21 = m*b*l*o
+    m22 = m*b*l*o**2+Iz
+    M_matrix = Matrix([[m11,m12],[m21,m22]])
+    kk11 = c1*l
+    kk22 = k2*l
+    Kk_matrix = Matrix([[kk11,0],[0,kk22]])
+    f11 = sp.expand(ro*v**2*(b/2)*(L_z+sp.I*k*L_z_d)/(b/2))
+    f12 = sp.expand(ro*v**2*(b/2)*(L_t+sp.I*k*L_t_d))
+    f21 = sp.expand(ro*v**2*(b/2)**2*(M_z+sp.I*k*M_z_d)/(b/2))
+    f22 = sp.expand(ro*v**2*(b/2)**2*(M_t+sp.I*k*M_t_d))
+    f11*= -l
+    f12*= l
+    f21*= -l
+    f22*= l
+    Force_matrix = Matrix([[f11,f12],[f21,f22]])
+    Final_matrix = -w**2*M_matrix+Kk_matrix-Force_matrix
+##    print(f"{Kk_matrix=}")
+    eq_det = sp.Eq(Final_matrix.det(),0)
+    res_det = sp.solve(eq_det, w)
+    res_after_first_iteration = res_det
+##    print(f"{res_after_first_iteration=}")
+    two_closest = []
+    w_j_final = []
+    closest = res_after_first_iteration[0]
+    for r in res_after_first_iteration:
+        if abs(r-w_j)<abs(closest-w_j):
+            closest = r
+    two_closest.append(closest)
+    res_after_first_iteration.remove(closest)
+    closest = res_after_first_iteration[0]
+    for r in res_after_first_iteration:
+        if abs(r-w_j)<abs(closest-w_j):
+            closest = r
+    two_closest.append(closest)
+    res_after_first_iteration.remove(closest)
+          
+    for r in two_closest:
+        stop_flag = 1
+        ind = 0
+        while True:
+            if ind == 0:
+                ind+= 1
+                w_j = r
+            else:
+                ind+= 1
+                w_j_prev = w_j
+                res_det_prev = res_det
+                w_j = res_det[0]
+                dist = abs(w_j_prev-w_j)
+                for w_k in res_det:
+                    if abs(w_j_prev-w_k)<dist:
+                        dist = abs(w_j_prev-w_k)
+                        w_j = w_k
+##                    print(f"Dist from {w_j_prev} to {w_k}  is  {abs(w_j_prev-w_k)}")
+    ##        w_j = 0.000000000001
+##            print(f"{w_j=}")
+            k_j = w_j*b/2/v
+            k = w*b/2/v
+            L_z = 2*math.pi*(-k**2/2-im(C_theod(v,w_j,b))*k)
+            L_z_d = 2*math.pi*sp.re(C_theod(v,w_j,b))
+            L_t = 2*math.pi*(k**2*(2*o/b)/2+re(C_theod(v,w_j,b))-im(C_theod(v,w_j,b))*k*(1/2-2*o/b))
+            L_t_d = 2*math.pi*(1/2+re(C_theod(v,w_j,b))*(1/2-2*o/b)+im(C_theod(v,w_j,b))/k)
+            M_z = 2*math.pi*(-k**2*(2*o/b)/2-im(C_theod(v,w_j,b))*k*(1/2+2*o/b))
+            M_z_d = 2*math.pi*(1/2+2*o/b)*re(C_theod(v,w_j,b))
+            M_t = 2*math.pi*(k**2/2*(1/8+(2*o/b)**2)+re(C_theod(v,w_j,b))*(1/2+2*o/b)-im(C_theod(v,w_j,b))*k*(1/2+2*o/b)*(1/2-2*o/b))
+            M_t_d = 2*math.pi*(-1/2*(1/2-2*o/b)+re(C_theod(v,w_j,b))*(1/2+2*o/b)*(1/2-2*o/b)+im(C_theod(v,w_j,b))/k*(1/2+2*o/b))
+            m11 = m*b*l
+            m12 = m*b*l*o
+            m21 = m*b*l*o
+            m22 = m*b*l*o**2+Iz
+            M_matrix = Matrix([[m11,m12],[m21,m22]])
+            kk11 = c1*l
+            kk22 = k2*l
+            Kk_matrix = Matrix([[kk11,0],[0,kk22]])
+    ##          Сейчас везде стоит w_j
+    ##          Как превратить в квазистационарный: В строках f12 и f22 w заменить на w_j; вернуть строку w_j = 0.000000000001
+            f11 = sp.expand(ro*v**2*(b/2)*(L_z+sp.I*k*L_z_d)/(b/2))
+            f12 = sp.expand(ro*v**2*(b/2)*(L_t+sp.I*k*L_t_d))
+            f21 = sp.expand(ro*v**2*(b/2)**2*(M_z+sp.I*k*M_z_d)/(b/2))
+            f22 = sp.expand(ro*v**2*(b/2)**2*(M_t+sp.I*k*M_t_d))
+            f11*= -l
+            f12*= l
+            f21*= -l
+            f22*= l
+    ##        print(f"{L_z = }; {L_z_d = }; {L_t = }; {L_t_d = }; {M_z = }; {M_z_d = }; {M_t = }; {M_t_d = }; ")
+            Force_matrix = Matrix([[f11,f12],[f21,f22]])
+    ##        print(f"{Force_matrix=}")
+            Final_matrix = -w**2*M_matrix+Kk_matrix-Force_matrix
+            eq_det = sp.Eq(Final_matrix.det(),0)
+            res_det = sp.solve(eq_det, w)
+    ##        print(f"\n{eq_det=}")
+    ##        print(f"\n{res_det=}\n\n")
+            if ind > 1 and abs(w_j-w_j_prev)<=0.0001:
+##                print(f" ")
+                w_j_final.append(w_j)
+                if im(w_j)<0:
+                    flutter_flag = 1
                 break
-        else:
-            stop_flag = 0
-            print(f"\n{eq_det=}")
-            print(f"\n{res_det=}\n\n")
-            print(f"{w_j=}")
-##        stop_flag = 0
-    if flutter_speed[2] == '>1000' and (im(res_det[0])<0 or im(res_det[1])<0 or im(res_det[2])<0 or im(res_det[3])<0):
-        flutter_speed[2] = v*3.6/1000
+            if ind == 20:
+                flutter_flag = 1
+                w_j_final.append(w_j)
+                print(f"Итерационный процесс не сходится. Принято, что взята скорость выше критической. Результат двух последних итераций:\n{w_j_prev}\n{w_j}")
+                break
+    if len(w_j_final)<2:
+        print("Схождение к одному корню")
+    return flutter_flag
 
+
+#################      Possio    ################################
+
+##    print("###############   Possio   ##############")
+def get_Possio(v, c1, k2, m, h, b, o, dcy, ro, l, a, Sound_speed=340.294*1000):
+    v = v/3.6*1000
+    k2 = b**2/4*c1-c1*o**2
+    Iz = m*b*l*(h**2+b**2)/12
+    M = m*b*l
+    A = 2*o/b
+    a11 = c1*l
+    a12 = -o*c1*l
+    a21 = -o*c1*l
+    a22 = o**2*c1*l+k2*l
+    ka12 = -dcy*ro*v**2/2*b*l/M
+    ka22 = -a*dcy*ro*v**2/2*b*l/Iz
+    a13 = dcy*ro*v/2*b*l
+    a23 = dcy*ro*v/2*b*l*a
+    a14 = -dcy*ro*v/2*b*l*o
+    a24 = -dcy*ro*v/2*b*l*o*a
+    a11/= M
+    a12/= M
+    a13/= M
+    a14/= M
+    a21/= Iz
+    a22/= Iz
+    a23/= Iz
+    a24/= Iz
+    Kk_matrix = Matrix([[a11,a12],[a21,a22]])
+    Ka_matrix = Matrix([[0,ka12],[0,ka22]])
+    D_matrix = Matrix([[a13,0],[a23,0]])
+    w = sp.Symbol("w")
+    matrix_eq = -w**2*eye(2)+sp.I*w*D_matrix+Kk_matrix+Ka_matrix
+    eq_det = sp.Eq(matrix_eq.det(),0)
+    res = sp.solve(eq_det, w)
+##    print(f"{res=}")
+    flutter_flag = 0
+    res_det = res    
+    w_j = res_det[0]
+##    print(f"{w_j=}")
+    k_j = sp.I*w_j*b/2/v
+    k = sp.I*w*b/2/v  
+    Mach = v/Sound_speed
+##    Mach = 0.00000000001
+    L_h = k**2+2*k*C_theod(v,w_j,b)+Mach**2*math.log(Mach)*(k_j**4/2+2*k_j**3*C_theod(v,w_j,b)+2*k_j**2*C_theod(v,w_j,b)**2)
+    L_a = k-A*k**2+C_theod(v,w_j,b)*(2+(1-2*A)*k)+Mach**2*math.log(Mach)*(k_j**3/2-k_j**4/2*A+C_theod(v,w_j,b)*(2*k_j**2+(1/2-2*A)*k_j**3)+C_theod(v,w_j,b)**2*(2*k_j+(1-2*A)*k_j**2))
+    M_h = A*k**2+(1+2*A)*k*C_theod(v,w_j,b)+Mach**2*math.log(Mach)*((1+2*A)*k_j**2*C_theod(v,w_j,b)**2+(1/2+2*A)*k_j**3*C_theod(v,w_j,b)+k_j**4/2*A)
+    M_a = (A-1/2)*k-(1/8+A**2)*k**2+C_theod(v,w_j,b)*(1+2*A+(1/2-2*A**2)*k)+Mach**2*math.log(Mach)*(A/2*k_j**3-A**2/2*k_j**4+C_theod(v,w_j,b)**2*((1+2*A)*k_j+(1/2-2*A**2)*k_j**2)+C_theod(v,w_j,b)*((1/2+2*A)*k_j**2-2*A**2*k_j**3))
+    m11 = m*b*l
+    m12 = m*b*l*o
+    m21 = m*b*l*o
+    m22 = m*b*l*o**2+Iz
+    M_matrix = Matrix([[m11,m12],[m21,m22]])
+    kk11 = c1*l
+    kk22 = k2*l
+    Kk_matrix = Matrix([[kk11,0],[0,kk22]])
+    f11 = sp.expand(math.pi*ro*v**2*L_h)
+    f12 = sp.expand(math.pi*ro*v**2*(b/2)*L_a)
+    f21 = sp.expand(math.pi*ro*v**2*(b/2)*M_h)
+    f22 = sp.expand(math.pi*ro*v**2*(b/2)**2*M_a)
+    f11*= -l
+    f12*= l
+    f21*= -l
+    f22*= l
+    Force_matrix = Matrix([[f11,f12],[f21,f22]])
+    Final_matrix = -w**2*M_matrix+Kk_matrix-Force_matrix
+##    print(f"{Kk_matrix=}")
+    eq_det = sp.Eq(Final_matrix.det(),0)
+    res_det = sp.solve(eq_det, w)
+    res_after_first_iteration = res_det
+##    print(f"{res_after_first_iteration=}")
+    two_closest = []
+    w_j_final = []
+    closest = res_after_first_iteration[0]
+    for r in res_after_first_iteration:
+        if abs(r-w_j)<abs(closest-w_j):
+            closest = r
+    two_closest.append(closest)
+    res_after_first_iteration.remove(closest)
+    closest = res_after_first_iteration[0]
+    for r in res_after_first_iteration:
+        if abs(r-w_j)<abs(closest-w_j):
+            closest = r
+    two_closest.append(closest)
+    res_after_first_iteration.remove(closest)
+          
+    for r in two_closest:
+        stop_flag = 1
+        ind = 0
+        while True:
+            if ind == 0:
+                ind+= 1
+                w_j = r
+            else:
+                ind+= 1
+                w_j_prev = w_j
+                res_det_prev = res_det
+                w_j = res_det[0]
+                dist = abs(w_j_prev-w_j)
+                for w_k in res_det:
+                    if abs(w_j_prev-w_k)<dist:
+                        dist = abs(w_j_prev-w_k)
+                        w_j = w_k
+##                    print(f"Dist from {w_j_prev} to {w_k}  is  {abs(w_j_prev-w_k)}")
+    ##        w_j = 0.000000000001
+##            print(f"{w_j=}")
+            k_j = sp.I*w_j*b/2/v
+            k = sp.I*w*b/2/v  
+            Mach = v/Sound_speed
+##            Mach = 0.00000000001
+            L_h = k**2+2*k*C_theod(v,w_j,b)+Mach**2*math.log(Mach)*(k_j**4/2+2*k_j**3*C_theod(v,w_j,b)+2*k_j**2*C_theod(v,w_j,b)**2)
+            L_a = k-A*k**2+C_theod(v,w_j,b)*(2+(1-2*A)*k)+Mach**2*math.log(Mach)*(k_j**3/2-k_j**4/2*A+C_theod(v,w_j,b)*(2*k_j**2+(1/2-2*A)*k_j**3)+C_theod(v,w_j,b)**2*(2*k_j+(1-2*A)*k_j**2))
+            M_h = A*k**2+(1+2*A)*k*C_theod(v,w_j,b)+Mach**2*math.log(Mach)*((1+2*A)*k_j**2*C_theod(v,w_j,b)**2+(1/2+2*A)*k_j**3*C_theod(v,w_j,b)+k_j**4/2*A)
+            M_a = (A-1/2)*k-(1/8+A**2)*k**2+C_theod(v,w_j,b)*(1+2*A+(1/2-2*A**2)*k)+Mach**2*math.log(Mach)*(A/2*k_j**3-A**2/2*k_j**4+C_theod(v,w_j,b)**2*((1+2*A)*k_j+(1/2-2*A**2)*k_j**2)+C_theod(v,w_j,b)*((1/2+2*A)*k_j**2-2*A**2*k_j**3))
+            m11 = m*b*l
+            m12 = m*b*l*o
+            m21 = m*b*l*o
+            m22 = m*b*l*o**2+Iz
+            M_matrix = Matrix([[m11,m12],[m21,m22]])
+            kk11 = c1*l
+            kk22 = k2*l
+            Kk_matrix = Matrix([[kk11,0],[0,kk22]])
+            f11 = sp.expand(math.pi*ro*v**2*L_h)
+            f12 = sp.expand(math.pi*ro*v**2*(b/2)*L_a)
+            f21 = sp.expand(math.pi*ro*v**2*(b/2)*M_h)
+            f22 = sp.expand(math.pi*ro*v**2*(b/2)**2*M_a)
+            f11*= -l
+            f12*= l
+            f21*= -l
+            f22*= l
+    ##        print(f"{L_z = }; {L_z_d = }; {L_t = }; {L_t_d = }; {M_z = }; {M_z_d = }; {M_t = }; {M_t_d = }; ")
+            Force_matrix = Matrix([[f11,f12],[f21,f22]])
+    ##        print(f"{Force_matrix=}")
+            Final_matrix = -w**2*M_matrix+Kk_matrix-Force_matrix
+            eq_det = sp.Eq(Final_matrix.det(),0)
+            res_det = sp.solve(eq_det, w)
+    ##        print(f"\n{eq_det=}")
+    ##        print(f"\n{res_det=}\n\n")
+            if ind>1 and abs(w_j-w_j_prev)<=0.0001:
+##                print(f" ")
+                w_j_final.append(w_j)
+                if im(w_j)<0:
+                    flutter_flag = 1
+                break
+            if ind == 20:
+                flutter_flag = 1
+                w_j_final.append(w_j)
+                print(f"Итерационный процесс не сходится. Принято, что взята скорость выше критической. Результат двух последних итераций:\n{w_j_prev}\n{w_j}")
+                break
+    if len(w_j_final)<2:
+        print("Схождение к одному корню")
+    return flutter_flag
 ###############      Possio           ##################
 ##
 ##    print("###############   Possio   ##############")
@@ -307,13 +532,64 @@ def theor_calc(v=150*1000, flutter_speed=0, file="result for 300_1 iter.tra"):
 ##            stop_flag = 0
 ##    if flutter_speed[4] == '>1000' and (im(res_det[0])<0 or im(res_det[1])<0 or im(res_det[2])<0 or im(res_det[3])<0):
 ##        flutter_speed[4] = v*3.6/1000
-    return flutter_speed
+##    return flutter_speed
+
+def get_crit_speed_both(c1, k2, m, h, b, o, dcy, ro, l, a, Sound_speed):
+    crit_speed_Theodorsen = 0
+    crit_speed_Possio = 0
+    v = 2**10
+    for i in range(9, -1,-1):
+        print(f"{i}...      {v = }")
+        if get_Theodorsen(v, c1, k2, m, h, b, o, dcy, ro, l, a, Sound_speed) == 1:
+            v -= 2**i
+        else:
+            v += 2**i
+    if get_Theodorsen(v, c1, k2, m, h, b, o, dcy, ro, l, a, Sound_speed) == 1:
+        crit_speed_Theodorsen = v
+    else:
+        crit_speed_Theodorsen = v+1
+    print("Проверка результата")
+    if get_Theodorsen(crit_speed_Theodorsen, c1, k2, m, h, b, o, dcy, ro, l, a, Sound_speed) == get_Theodorsen(crit_speed_Theodorsen-1, c1, k2, m, h, b, o, dcy, ro, l, a, Sound_speed):
+        print("Ошибка, найдена неверная скорость по Теодорсену")
+        exit(1)
+    else:
+        print(f"Критическая скорость по Теодорсену равна {crit_speed_Theodorsen}")
+        
+    v = 2**10
+    for i in range(9, -1,-1):
+        print(f"{i}...      {v = }")
+        if get_Possio(v, c1, k2, m, h, b, o, dcy, ro, l, a, Sound_speed) == 1:
+            v -= 2**i
+        else:
+            v += 2**i
+    if get_Possio(v, c1, k2, m, h, b, o, dcy, ro, l, a, Sound_speed) == 1:
+        crit_speed_Possio = v
+    else:
+        crit_speed_Possio = v+1
+    print("Проверка результата")
+    if get_Possio(crit_speed_Possio, c1, k2, m, h, b, o, dcy, ro, l, a, Sound_speed) == get_Possio(crit_speed_Possio-1, c1, k2, m, h, b, o, dcy, ro, l, a, Sound_speed):
+        print("Ошибка, найдена неверная скорость по Поссио")
+        exit(2)
+    else:
+        print(f"Критическая скорость по Поссио равна {crit_speed_Possio}")
+    return (crit_speed_Theodorsen, crit_speed_Possio)
+
+        
 if __name__ == "__main__":
-    flutter_speed = ['>1000', '>1000', '>1000', '>1000', '>1000']
-    for i in range(317, 319, 1):
-##        file_res_300_iter = open("result for 300_1 iter.tra",'a+')
-####        file_res_300_iter.write(str(i))
-##        file_res_300_iter.close()
-        flutter_speed = theor_calc(i, flutter_speed)
-        print(f"\n\nspeed = {i}, flutter = {flutter_speed}\n")
+    c1=0.09; k2=30; m=2*(10**-8); h=10; b=100; o=-20; dcy=6.283; ro=1.225e-12; l=4000; a=25;
+    Sound_speed = 340.294*1000
+    crit_speed_both1 = get_crit_speed_both(0.6, k2, m, h, b, o, dcy, ro, l, a, Sound_speed)
+##    crit_speed_both2 = get_crit_speed_both(1, k2, m, h, b, o, dcy, ro, l, a, Sound_speed)
+##    crit_speed_both3 = get_crit_speed_both(2, k2, m, h, b, o, dcy, ro, l, a, Sound_speed)
+    
+    print(crit_speed_both1)
+##    print(crit_speed_both2)
+##    print(crit_speed_both3)
+
+##    for i in range(308,322):
+##        get_Theodorsen(i, c1, k2, m, h, b, o, dcy, ro, l, a, Sound_speed)
+##        print(get_Possio(i, c1, k2, m, h, b, o, dcy, ro, l, a, Sound_speed))
+    
+##        flutter_speed = theor_calc(i, flutter_speed)
+##        print(f"\n\nspeed = {i}, flutter = {flutter_speed}\n")
  
